@@ -49,10 +49,4 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-const mapStateToProps = (state, ownProps) => {
-  return {
-    conversation: { ...state.conversations.find((convo) => convo.id === ownProps.conversation.id) }
-  }
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Chat);
+export default connect(null, mapDispatchToProps)(Chat);
