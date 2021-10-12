@@ -51,6 +51,7 @@ const ActiveChat = (props) => {
   );
 };
 
+
 const mapStateToProps = (state) => {
   return {
     user: state.user,
