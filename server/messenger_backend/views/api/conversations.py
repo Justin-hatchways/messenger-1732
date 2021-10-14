@@ -1,3 +1,5 @@
+from functools import reduce
+
 from django.contrib.auth.middleware import get_user
 from django.db.models import Max, Q
 from django.db.models.query import Prefetch
@@ -13,6 +15,7 @@ class Conversations(APIView):
         """get all conversations for a user, include latest message text for preview, and all messages
         include other user model so we have info on username/profile pic (don't include current user info)
         TODO: for scalability, implement lazy loading"""
+
         try:
             user = get_user(request)
 
@@ -41,6 +44,17 @@ class Conversations(APIView):
                     ],
                 }
 
+                try:
+                    convo_dict["lastViewed"] = next(
+                        (
+                            message.id
+                            for message in reversed(convo.messages.all()) 
+                            if message.senderId != user.id and message.viewed
+                        )
+                    )
+                except StopIteration:
+                    convo_dict["lastViewed"] = None
+
                 # set properties for notification count and latest message preview
                 convo_dict["latestMessageText"] = convo_dict["messages"][-1]["text"]
 
@@ -50,6 +64,18 @@ class Conversations(APIView):
                     convo_dict["otherUser"] = convo.user1.to_dict(user_fields)
                 elif convo.user2 and convo.user2.id != user_id:
                     convo_dict["otherUser"] = convo.user2.to_dict(user_fields)
+                
+                # set a property for last viewed message of other user
+                try:
+                    convo_dict["otherUser"]["lastViewed"] = next(
+                        (
+                            message.id
+                            for message in reversed(convo.messages.all()) 
+                            if message.senderId == user.id and message.viewed
+                        )
+                    )
+                except StopIteration:
+                    convo_dict["otherUser"]["lastViewed"] = None
 
                 # set property for online status of the other user
                 if convo_dict["otherUser"]["id"] in online_users:
