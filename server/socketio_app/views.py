@@ -30,6 +30,14 @@ def new_message(sid, message):
         skip_sid=sid,
     )
 
+@sio.on("update-viewed-messages")
+def new_message(sid, message):
+    sio.emit(
+        "update-viewed-messages",
+        message,
+        skip_sid=sid,
+    )
+
 
 @sio.on("logout")
 def logout(sid, user_id):
