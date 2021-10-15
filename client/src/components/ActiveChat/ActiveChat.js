@@ -27,7 +27,7 @@ const ActiveChat = (props) => {
   const conversation = props.conversation || {};
 
   const onFocus = () => {
-   if (conversation.messages || conversation.otherUser)){
+   if (conversation.messages || conversation.otherUser){
       props.updateViewed(conversation.id, conversation.messages, conversation.lastViewed, conversation.otherUser);
     }
   };
