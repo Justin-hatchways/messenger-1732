@@ -1,5 +1,6 @@
 export const addMessageToStore = (state, payload) => {
   const { message, sender, activeConversation} = payload;
+
   // if sender isn't null, that means the message needs to be put in a brand new convo
   if (sender !== null) {
     const newConvo = {
@@ -16,12 +17,12 @@ export const addMessageToStore = (state, payload) => {
     if (convo.id === message.conversationId) {
       const convoCopy = {...convo, latestMessageText: message.text};
       convoCopy.messages.push(message);
-      
-      // we've seen the message if the current the sender is the activeChat
-      if (activeConversation === message.senderId && message.senderId === convoCopy.otherUser.id){
-        convoCopy.lastViewed = message.id
-      }
 
+      // we've seen the message if the current the sender is the activeChat and the tab is in focus
+      if (activeConversation === message.senderId && message.senderId === convoCopy.otherUser.id && document.hasFocus()){
+        convoCopy.lastViewed = message.id;
+      }
+      
       return convoCopy;
     } else {
       return convo;
