@@ -50,7 +50,7 @@ const Chat = (props) => {
         online={otherUser.online}
         sidebar={true}
       />
-      <ChatContent conversation={conversation} />
+      <ChatContent conversation={conversation} unreadMessages={unreadMessages} />
       <Badge badgeContent={unreadMessages} classes={{badge: classes.badge}} visibility={unreadMessages === 0} />
     </Box>
   );
