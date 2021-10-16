@@ -30,20 +30,22 @@ export const addMessageToStore = (state, payload) => {
   });
 };
 
+const updateConvoLastViewed = (convo, lastViewed, callback) => {
+  const convoCopy = {...convo};
+  callback(convoCopy, lastViewed);
+  return convoCopy;
+}
+
 export const updateViewedMessagesInStore = (state, payload) => {
   const { conversationId, viewerId, lastViewed } = payload;
 
   return state.map((convo) => {
-    if (convo.id === conversationId) {
-      if(viewerId === convo.otherUser.id && convo.otherUser.lastViewed < lastViewed){ // update the which message bubble the 
-        const convoCopy = {...convo};
-        convoCopy.otherUser.lastViewed = lastViewed;
-        return convoCopy;
-      } else if(viewerId !== convo.otherUser.id && convo.lastViewed < lastViewed){ // update this users unseen count
-        const convoCopy = {...convo};
-        convoCopy.lastViewed = lastViewed;
-        return convoCopy;
-      } // do not update the state if the appropriate lastViewd value didn't change
+    if ( convo.id === conversationId ){
+      if( viewerId === convo.otherUser.id && convo.otherUser.lastViewed < lastViewed ) { // update the which message bubble the other user has seen
+        return updateConvoLastViewed(convo, lastViewed, (convo, lastViewed) => convo.otherUser.lastViewed = lastViewed );
+      } else if( viewerId !== convo.otherUser.id && convo.lastViewed < lastViewed ){ // update this users unseen count
+        return updateConvoLastViewed(convo, lastViewed, (convo, lastViewed) => convo.lastViewed = lastViewed );
+      }
       return convo;
     } else {
       return convo;
