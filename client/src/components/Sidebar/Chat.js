@@ -1,5 +1,5 @@
 import React from "react";
-import { Box } from "@material-ui/core";
+import { Box, Badge } from "@material-ui/core";
 import { BadgeAvatar, ChatContent, UnreadMessages } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
@@ -16,6 +16,10 @@ const useStyles = makeStyles((theme) => ({
     "&:hover": {
       cursor: "grab"
     }
+  },
+  badge: {
+    backgroundColor: "#3f92ff",
+    color: "#ffffff"
   }
 }));
 
@@ -28,6 +32,16 @@ const Chat = (props) => {
     await props.setActiveChat(conversation.otherUser.id);
   };
 
+  const getUnreadMessages = (convo) => {
+    return convo.messages.filter(
+      (msg) => 
+      (convo.lastViewed === null || msg.id > convo.lastViewed) && 
+      msg.senderId === convo.otherUser.id
+    ).length;
+  };
+
+  const unreadMessages = getUnreadMessages(conversation);
+
   return (
     <Box onClick={() => handleClick(conversation)} className={classes.root}>
       <BadgeAvatar
@@ -37,7 +51,7 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} />
-      <UnreadMessages conversation={conversation} />
+      <Badge badgeContent={unreadMessages} classes={{badge: classes.badge}} visibility={unreadMessages === 0} />
     </Box>
   );
 };
