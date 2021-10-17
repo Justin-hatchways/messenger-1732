@@ -113,18 +113,16 @@ class Conversations(APIView):
             if last_viewed_message_id is not None:
                 message_filters['id__lte'] = last_viewed_message_id
             messages = Message.objects.filter(**message_filters).exclude(senderId = viewer_id).all()
-            
+
             # base response
-            response_dict = {"conversationId": conversation_id, "viewerId": viewer_id, "lastViewed": None}
+            response_dict = {
+                "conversationId": conversation_id, 
+                "viewerId": viewer_id, 
+                "lastViewed": max(message.id for message in messages) if len(messages)>0 else None
+            }
 
             # update the db with all the viewed messages
-            for message in messages:
-                message.viewed = True
-                message.save()
-                
-                # update lastViewed
-                if response_dict["lastViewed"] is None or message.id > response_dict["lastViewed"]:
-                    response_dict["lastViewed"] = message.id
+            messages.update(viewed=True)
             
             return JsonResponse(response_dict)
         except Exception as e:
