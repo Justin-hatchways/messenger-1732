@@ -121,11 +121,13 @@ const sendUpdatedView = (data) => {
 };
 
 const getLastViewed = (messages, otherUser) =>{
-  // find the last viewed message
+  // find the last message sent by the other user
+  const messagesLength = messages.length - 1;
+  let lastViewedIndex = 0;
   let lastViewedId = null;
-  let lastViewedIndex = 1;
-  while( (messages.length >= lastViewedIndex) && lastViewedId === null){
-    const message = messages[messages.length - lastViewedIndex];
+
+  while( (lastViewedIndex <= messagesLength) && lastViewedId === null){
+    const message = messages[messagesLength - lastViewedIndex];
     if(message.senderId === otherUser.id){
       lastViewedId = message.id;
     }
