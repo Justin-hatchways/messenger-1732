@@ -1,4 +1,4 @@
-import { React, useEffect } from "react";
+import { React } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
@@ -25,26 +25,19 @@ const ActiveChat = (props) => {
   const classes = useStyles();
   const { user } = props;
   const conversation = props.conversation || {};
-
+  
   const onFocus = () => {
-   if (conversation.messages || conversation.otherUser){
-      props.updateViewed(conversation.id, conversation.messages, conversation.lastViewed, conversation.otherUser);
+    if ( conversation.messages && conversation.otherUser ){
+        props.updateViewed(conversation.id, conversation.messages, conversation.lastViewed, conversation.otherUser);
     }
   };
 
-  useEffect(() => {
-    window.addEventListener('focus', onFocus);
-    return () => {
-      window.removeEventListener('focus', onFocus);
-    };
-  });
-
-  if ( document.hasFocus() && !(typeof conversation.messages === 'undefined' || typeof conversation.otherUser === 'undefined')){
+  if ( document.hasFocus() && conversation.messages && conversation.otherUser ){
     props.updateViewed(conversation.id, conversation.messages, conversation.lastViewed, conversation.otherUser);
   }
 
   return (
-    <Box className={classes.root}>
+    <Box tabIndex="0" onFocus={onFocus} className={classes.root}>
       {conversation.otherUser && (
         <>
           <Header
