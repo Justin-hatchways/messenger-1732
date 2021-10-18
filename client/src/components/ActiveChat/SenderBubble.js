@@ -42,7 +42,7 @@ const SenderBubble = (props) => {
       </Box>
       { 
         otherUser.lastViewed === msgId && 
-        <Avatar alt={otherUser.username} src={otherUser.photoUrl} className={classes.lastViewedPic}></Avatar>
+        <Avatar alt={otherUser.username} src={otherUser.photoUrl} className={classes.lastViewedPic}/>
       }
     </Box>
   );
