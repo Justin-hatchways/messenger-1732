@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Badge } from "@material-ui/core";
-import { BadgeAvatar, ChatContent, UnreadMessages } from "../Sidebar";
+import { BadgeAvatar, ChatContent } from "../Sidebar";
 import { makeStyles } from "@material-ui/core/styles";
 import { setActiveChat } from "../../store/activeConversation";
 import { connect } from "react-redux";
@@ -51,7 +51,7 @@ const Chat = (props) => {
         sidebar={true}
       />
       <ChatContent conversation={conversation} unreadMessages={unreadMessages} />
-      <Badge badgeContent={unreadMessages} classes={{badge: classes.badge}} visibility={unreadMessages === 0} />
+      <Badge badgeContent={unreadMessages} classes={{badge: classes.badge}} invisible={unreadMessages === 0} />
     </Box>
   );
 };
