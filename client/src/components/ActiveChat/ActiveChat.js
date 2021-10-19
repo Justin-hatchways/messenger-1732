@@ -1,8 +1,9 @@
-import React from "react";
+import { React } from "react";
 import { makeStyles } from "@material-ui/core/styles";
 import { Box } from "@material-ui/core";
 import { Input, Header, Messages } from "./index";
 import { connect } from "react-redux";
+import { patchUpdateViewed } from "../../store/utils/thunkCreators";
 
 const useStyles = makeStyles(() => ({
   root: {
@@ -24,9 +25,19 @@ const ActiveChat = (props) => {
   const classes = useStyles();
   const { user } = props;
   const conversation = props.conversation || {};
+  
+  const onFocus = () => {
+    if ( conversation.messages && conversation.otherUser ){
+        props.updateViewed(conversation.id, conversation.messages, conversation.lastViewed, conversation.otherUser);
+    }
+  };
+
+  if ( document.hasFocus() && conversation.messages && conversation.otherUser ){
+    props.updateViewed(conversation.id, conversation.messages, conversation.lastViewed, conversation.otherUser);
+  }
 
   return (
-    <Box className={classes.root}>
+    <Box tabIndex="0" onFocus={onFocus} className={classes.root}>
       {conversation.otherUser && (
         <>
           <Header
@@ -58,9 +69,18 @@ const mapStateToProps = (state) => {
     conversation:
       state.conversations &&
       state.conversations.find(
-        (conversation) => conversation.otherUser.username === state.activeConversation
+        (conversation) => conversation.otherUser.id === state.activeConversation
       )
   };
 };
 
-export default connect(mapStateToProps, null)(ActiveChat);
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    updateViewed: (conversationId, messages, currentLastViewedId, otherUser) => {
+      dispatch(patchUpdateViewed(conversationId, messages, currentLastViewedId, otherUser));
+    }
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ActiveChat);

@@ -1,10 +1,12 @@
 export const addMessageToStore = (state, payload) => {
-  const { message, sender } = payload;
+  const { message, sender, activeConversation} = payload;
+
   // if sender isn't null, that means the message needs to be put in a brand new convo
   if (sender !== null) {
     const newConvo = {
       id: message.conversationId,
       otherUser: sender,
+      lastViewed: null,
       messages: [message],
     };
     newConvo.latestMessageText = message.text;
@@ -15,12 +17,41 @@ export const addMessageToStore = (state, payload) => {
     if (convo.id === message.conversationId) {
       const convoCopy = {...convo, latestMessageText: message.text};
       convoCopy.messages.push(message);
+
+      // we've seen the message if the current the sender is the activeChat and the tab is in focus
+      if (activeConversation === message.senderId && message.senderId === convoCopy.otherUser.id && document.hasFocus()){
+        convoCopy.lastViewed = message.id;
+      }
+      
       return convoCopy;
     } else {
       return convo;
     }
   });
 };
+
+const updateConvoLastViewed = (convo, lastViewed, callback) => {
+  const convoCopy = {...convo};
+  callback(convoCopy, lastViewed);
+  return convoCopy;
+}
+
+export const updateViewedMessagesInStore = (state, payload) => {
+  const { conversationId, viewerId, lastViewed } = payload;
+
+  return state.map((convo) => {
+    if ( convo.id === conversationId ){
+      if( viewerId === convo.otherUser.id && convo.otherUser.lastViewed < lastViewed ) { // update the which message bubble the other user has seen
+        return updateConvoLastViewed(convo, lastViewed, (convo, lastViewed) => convo.otherUser.lastViewed = lastViewed );
+      } else if( viewerId !== convo.otherUser.id && convo.lastViewed < lastViewed ){ // update this users unseen count
+        return updateConvoLastViewed(convo, lastViewed, (convo, lastViewed) => convo.lastViewed = lastViewed );
+      }
+      return convo;
+    } else {
+      return convo;
+    }
+  });
+}
 
 export const addOnlineUserToStore = (state, id) => {
   return state.map((convo) => {

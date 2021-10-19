@@ -1,9 +1,11 @@
 import axios from "axios";
 import socket from "../../socket";
+import store from '../../store';
 import {
   gotConversations,
   addConversation,
   setNewMessage,
+  setViewedMessages,
   setSearchedUsers,
 } from "../conversations";
 import { gotUser, setFetchingStatus } from "../user";
@@ -100,13 +102,53 @@ export const postMessage = (body) => async (dispatch) => {
       if (!body.conversationId) {
         dispatch(addConversation(body.recipientId, data.message));
       } else {
-        dispatch(setNewMessage(data.message));
+        dispatch(setNewMessage(data.message, store.getState('activeConversation')));
       }
 
       sendMessage(data, body);
     } catch (error) {
       console.error(error);
     }
+};
+
+const saveViewedState = async (body) => {
+  const { data } = await axios.patch("/api/conversations", body);
+  return data;
+};
+
+const sendUpdatedView = (data) => {
+  socket.emit("update-viewed-messages", data);
+};
+
+const getLastViewed = (messages, otherUser) =>{
+  // find the last message sent by the other user
+  const messagesLength = messages.length - 1;
+  let lastViewedIndex = 0;
+  let lastViewedId = null;
+
+  while( (lastViewedIndex <= messagesLength) && lastViewedId === null){
+    const message = messages[messagesLength - lastViewedIndex];
+    if(message.senderId === otherUser.id){
+      lastViewedId = message.id;
+    }
+    lastViewedIndex++;
+  }
+  return lastViewedId;
+};
+
+export const patchUpdateViewed = (conversationId, messages, currentLastViewedId, otherUser) => async (dispatch) => {
+  try {
+    const lastViewedId = getLastViewed(messages, otherUser);
+    if( lastViewedId && lastViewedId > currentLastViewedId ){
+      const data = await saveViewedState({conversationId, lastViewedMsgId: lastViewedId});
+
+      dispatch(setViewedMessages(data));
+      
+      sendUpdatedView(data);
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 export const searchUsers = (searchTerm) => async (dispatch) => {
